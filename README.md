@@ -1,11 +1,13 @@
 # WebPage Future is Robotics
 
-This repository contains a PHP/MySQL web application inspired by the CrunchLabs landing page. It includes:
+This repository contains a PHP/MySQL web application inspired by the CrunchLabs landing page. It focuses on a public-facing catalog and a lightweight admin area for maintaining product information.
 
-- A public storefront that focuses on the product catalog with per-item photos, captions, and prices.
-- User registration and login backed by secure password hashing.
-- An admin dashboard for viewing user/product statistics and managing inventory.
-- A MySQL schema for users and product catalog data.
+## Features
+
+- Responsive storefront that displays every robotics kit with its database ID, caption, price, and inventory quantity.
+- Simple admin pages for adding or removing products—no site login is required, so only your MariaDB/MySQL password is needed.
+- Sample catalog data and SVG placeholders so the grid is populated immediately after importing the schema.
+- Automatic base-path detection so the site keeps working even if you rename the project folder.
 
 ## Prerequisites
 
@@ -31,8 +33,8 @@ Make sure the `pdo_mysql` extension is enabled in your `php.ini` (uncomment `ext
 ## Database Setup
 
 1. Launch the MySQL shell (`mysql -u root -p`).
-2. Run the SQL statements in [`crunchlabs-clone/database.sql`](crunchlabs-clone/database.sql) to create the `crunchlabs` database, tables, seed data, and admin user.
-3. Update the admin email/password in the script before running if desired. The seed password hash in the file was generated with PHP's `password_hash()` for better security.
+2. Run the SQL statements in [`crunchlabs-clone/database.sql`](crunchlabs-clone/database.sql) to create the `crunchlabs` database, the `products` table, and sample catalog rows.
+3. Your MariaDB/MySQL account password is the only credential required to manage the site.
 
 ## Project Structure
 
@@ -52,13 +54,9 @@ crunchlabs-clone/
 │   ├── footer.php
 │   └── header.php
 ├── config.php
-├── security.php
 ├── database.sql
 ├── db.php
-├── index.php
-├── login.php
-├── logout.php
-└── register.php
+└── index.php
 ```
 
 Copy the entire `crunchlabs-clone` directory into your local web root (`htdocs/` for XAMPP or `/var/www/html/` for Apache on Linux).
@@ -70,54 +68,22 @@ Edit `crunchlabs-clone/config.php` and set `DB_USER` / `DB_PASS` to match your M
 ## Running the Site
 
 1. Start Apache and MySQL from the XAMPP control panel (or via `systemctl` if you installed the native packages).
-2. Visit the site at `http://localhost/<folder-name>/` (for example, `http://localhost/crunchlabs-clone/`). The `<folder-name>`
-   must match the directory you copied into `htdocs/`—if you renamed the folder to `crunchlab-copy`, browse to
-   `http://localhost/crunchlab-copy/`. The application auto-detects its folder name so navigation links and redirects continue
-   to work after renaming.
-3. Register a new account or log in using the seeded admin credentials (`admin@example.com` / `AdminPass123!`).
-4. Admins can manage products at `http://localhost/<folder-name>/admin/products.php`.
+2. Visit the site at `http://localhost/<folder-name>/` (for example, `http://localhost/crunchlabs-clone/`). The `<folder-name>` must match the directory you copied into `htdocs/`—if you renamed the folder to `crunchlab-copy`, browse to `http://localhost/crunchlab-copy/`. The application auto-detects its folder name so navigation links continue to work after renaming.
+3. Open `http://localhost/<folder-name>/admin/products.php` to add, update, or delete products. Because there is no site login, protect access to this page by restricting who can reach your local machine.
 
 ### Adding or Updating Product Photos
 
 1. Place JPG/PNG/SVG assets under `crunchlabs-clone/assets/img/products/`. A `placeholder.svg` file ships with the repo so the catalog always has a fallback.
-2. When creating or editing a product in the admin dashboard, set **Image Path** to `assets/img/products/<file-name>` (omit the
-   leading slash and folder name). You can also provide a full `http(s)` URL for externally hosted images.
+2. When creating a product in the admin dashboard, set **Image Path** to `assets/img/products/<file-name>` (omit the leading slash and folder name). You can also provide a full `http(s)` URL for externally hosted images.
 3. The storefront automatically displays the `name` column as the caption and the auto-increment `id` as the unique product identifier beneath each image.
 4. Add additional products any time—no layout updates are required. The responsive grid expands to fit as many cards as you need.
-
-## Viewing Accounts in the Database
-
-Once MySQL is running you can inspect the stored users (including their roles and password hashes) either through phpMyAdmin or
-the MySQL shell:
-
-### Option A: phpMyAdmin (bundled with XAMPP)
-1. Open `http://localhost/phpmyadmin/` in your browser.
-2. Sign in with your MySQL credentials (XAMPP default is user `root` with an empty password unless you changed it).
-3. In the left sidebar choose the `crunchlabs` database, then click the `users` table.
-4. phpMyAdmin will list every account along with the `role` column so you can confirm who is an admin.
-
-### Option B: MySQL command line
-1. Open the XAMPP **Shell** (or any terminal) and run `mysql -u root -p` (omit `-p` if your root account has no password).
-2. Select the database: `USE crunchlabs;`
-3. Query the table: `SELECT id, email, role, created_at FROM users;`
-4. To exit the shell type `exit`.
-
-Passwords are stored as secure hashes, so you will not see the original plain-text password—only the hashed value in the
-`password_hash` column.
-
-## Security Hardening
-
-The original prototype left several openings that could be abused. The current version includes the following safeguards:
-
-- **Session hardening:** Cookies are now sent with `HttpOnly`, `SameSite=Lax`, and optional `Secure` flags, and PHP strict mode reduces session fixation.
-- **CSRF protection:** Login, registration, and all admin product forms include verified CSRF tokens. Destructive actions (product deletion) now require POST instead of a GET link.
-- **Password hashing:** The seeded admin user uses the same `password_hash()` algorithm as runtime registrations, ensuring consistent bcrypt hashes.
-- **Logout sanitization:** Session data and cookies are fully cleared before redirecting to the storefront.
-
-For production deployments you should still enforce HTTPS, add rate limiting to login attempts, and consider stronger password and audit policies.
 
 ## Troubleshooting
 
 - **Access forbidden / blank page** – confirm the project folder is inside the XAMPP `htdocs` directory (or `/var/www/html` on Linux) and that file permissions allow Apache to read the files.
 - **Database connection failed** – confirm the MySQL service is running (green indicator inside XAMPP), the credentials in `config.php` match your MySQL setup, and that the `crunchlabs` database/tables were created from `database.sql`.
 - **"MySQL server has gone away"** – this indicates the database service dropped the connection (often after it has been idle). Start MySQL before loading the site and refresh the page—the application will automatically re-establish the connection using the retry logic in `db.php` when the service comes back online.
+
+## Security Notice
+
+With the password-only database approach requested for this setup, there are no authentication or CSRF protections on the PHP pages. Do not expose this application to the public internet without adding proper access controls.

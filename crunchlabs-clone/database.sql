@@ -1,14 +1,6 @@
 CREATE DATABASE IF NOT EXISTS crunchlabs;
 USE crunchlabs;
 
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    role ENUM('customer','admin') DEFAULT 'customer',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -19,12 +11,6 @@ CREATE TABLE IF NOT EXISTS products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed admin user (password hash generated via PHP's password_hash function).
-INSERT INTO users (email, password_hash, role)
-VALUES ('admin@example.com', '$2y$12$WmyoIxboumNLn08vQE5OXevqsdcRpRFZ7P7ntXtsjky5cO7lGlDzS', 'admin')
-ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), role = VALUES(role);
-
--- Optional starter catalog. Remove or adjust as desired before running in production.
 INSERT INTO products (name, description, price, quantity, image_path) VALUES
 ('Robot Arm Lab', 'Build a fully articulated robotic arm that responds to joystick controls.', 149.00, 12, 'assets/img/products/kit-robot-arm.svg'),
 ('Explorer Rover', 'Design a six-wheel rover with obstacle detection for rough terrain missions.', 129.00, 15, 'assets/img/products/kit-explorer-rover.svg'),

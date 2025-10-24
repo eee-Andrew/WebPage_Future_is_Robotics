@@ -21,14 +21,7 @@ $bodyClass = isset($bodyClass) ? trim((string) $bodyClass) : '';
         <ul class="nav-links">
             <li><a href="<?= htmlspecialchars(crunchlabs_url('index.php')); ?>">Home</a></li>
             <li><a href="<?= htmlspecialchars(crunchlabs_url('index.php')); ?>">Products</a></li>
-            <?php if (!empty($_SESSION['user'])): ?>
-                <li><a href="<?= htmlspecialchars(crunchlabs_url('logout.php')); ?>">Logout</a></li>
-                <?php if ($_SESSION['user']['role'] === 'admin'): ?>
-                    <li><a href="<?= htmlspecialchars(crunchlabs_url('admin/dashboard.php')); ?>">Admin</a></li>
-                <?php endif; ?>
-            <?php else: ?>
-                <li><a href="<?= htmlspecialchars(crunchlabs_url('login.php')); ?>">Login</a></li>
-            <?php endif; ?>
+            <li><a href="<?= htmlspecialchars(crunchlabs_url('admin/dashboard.php')); ?>">Admin</a></li>
         </ul>
     </nav>
     <?php if ($showHero): ?>
