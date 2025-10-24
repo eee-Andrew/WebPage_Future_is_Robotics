@@ -67,7 +67,8 @@ $currentUrl = $currentUrl ?? ($_SERVER['REQUEST_URI'] ?? roboforge_url('home.php
                         <input type="hidden" name="action" value="add">
                         <input type="hidden" name="product_id" id="overlay-product-id-cart">
                         <input type="hidden" name="redirect" value="<?= htmlspecialchars($currentUrl); ?>">
-                        <label data-i18n="overlay.quantity">Quantity
+                        <label>
+                            <span class="form-label" data-i18n="overlay.quantity">Quantity</span>
                             <input type="number" name="quantity" id="overlay-quantity" min="1" value="1" required>
                         </label>
                         <button type="submit" class="cta-button" data-i18n="overlay.addCart">Add to cart</button>

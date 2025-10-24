@@ -305,7 +305,11 @@
                     console.warn('Unable to parse translation params', error);
                 }
             }
-            element.innerHTML = rendered;
+            if (element.hasAttribute('data-i18n-html')) {
+                element.innerHTML = rendered;
+            } else {
+                element.textContent = rendered;
+            }
         });
         localStorage.setItem('roboforge-lang', language);
     }
