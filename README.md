@@ -13,8 +13,10 @@ Install a local PHP + MySQL stack. Two common options are:
 
 ### Option A: XAMPP (Windows/macOS/Linux)
 1. Download from [apachefriends.org](https://www.apachefriends.org/).
-2. Start **Apache** and **MySQL** from the XAMPP control panel.
-3. Use the included shell to run MySQL commands when needed.
+2. Launch the XAMPP Control Panel (on Windows, right-click and choose **Run as administrator** so services can bind to ports 80/443).
+3. When the status log mentions "think about running this application with administrator rights," accept the Windows security/UAC prompt if it appears and continue.
+4. Click **Start** beside **Apache** and **MySQL** until both entries turn green.
+5. Use the **Shell** button to open a terminal for running MySQL commands when needed.
 
 ### Option B: Native packages on Ubuntu/Debian
 ```bash
@@ -63,7 +65,7 @@ Edit `crunchlabs-clone/config.php` and set `DB_USER` / `DB_PASS` to match your M
 
 ## Running the Site
 
-1. Start Apache and MySQL.
+1. Start Apache and MySQL from the XAMPP control panel (or via `systemctl` if you installed the native packages).
 2. Visit `http://localhost/crunchlabs-clone/` to view the landing page.
 3. Register a new account or log in using the seeded admin credentials (`admin@example.com` / `AdminPass123!`).
 4. Admins can manage products at `http://localhost/crunchlabs-clone/admin/products.php`.
