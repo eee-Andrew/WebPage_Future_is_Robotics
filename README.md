@@ -1,13 +1,15 @@
 # WebPage Future is Robotics
 
-This repository contains a PHP/MySQL web application inspired by the CrunchLabs landing page. It focuses on a public-facing catalog and a lightweight admin area for maintaining product information.
+This repository contains a PHP/MySQL web application inspired by the CrunchLabs landing page. It now includes customer accounts, saved items, a shopping cart with checkout capture, multilingual copy (English/Greek), and a lightweight admin area for maintaining catalog data.
 
 ## Features
 
-- Responsive storefront that displays every robotics kit with its database ID, caption, price, and inventory quantity.
-- Simple admin pages for adding or removing products—no site login is required, so only your MariaDB/MySQL password is needed.
-- Sample catalog data and SVG placeholders so the grid is populated immediately after importing the schema.
-- Automatic base-path detection so the site keeps working even if you rename the project folder.
+- Responsive storefront grouped by learning stage (preschool, primary, high school, university) with product overlays that reveal detailed specs, per-kit IDs, and image captions.
+- Customer accounts with login/registration, saved items, and a persistent cart so each user can resume where they left off.
+- Card-style cart page that lets a customer update quantities and submit shipping + payment details; orders and line items are stored in MySQL for reference.
+- English/Greek language toggle that updates navigation, hero copy, and section headings without leaving the page.
+- Simple admin pages for adding/removing products (name, short/long description, category, price, quantity, image path) alongside basic catalog/order metrics.
+- Sample catalog data, SVG placeholders, and helper functions that keep URLs working even if you rename the project folder.
 
 ## Prerequisites
 
@@ -46,7 +48,7 @@ Make sure the `pdo_mysql` extension is enabled in your `php.ini` (uncomment `ext
    USE crunchlabs;
    SELECT id, name, price FROM products;
    ```
-4. Your MariaDB/MySQL account password is the only credential required to manage the site.
+4. The SQL script also seeds a demo admin user (`admin@example.com` / `AdminPass123!`) plus eight products—update or remove them as needed.
 
 ## Project Structure
 
@@ -58,6 +60,8 @@ crunchlabs-clone/
 ├── assets/
 │   ├── css/
 │   │   └── styles.css
+│   ├── js/
+│   │   └── app.js
 │   └── img/
 │       └── products/
 │           ├── README.md
@@ -68,7 +72,12 @@ crunchlabs-clone/
 ├── config.php
 ├── database.sql
 ├── db.php
-└── index.php
+├── account.php
+├── cart.php
+├── index.php
+├── login.php
+├── logout.php
+└── register.php
 ```
 
 Copy the entire `crunchlabs-clone` directory into your local web root (`htdocs/` for XAMPP or `/var/www/html/` for Apache on Linux).
@@ -81,14 +90,20 @@ Edit `crunchlabs-clone/config.php` and set `DB_USER` / `DB_PASS` to match your M
 
 1. Start Apache and MySQL from the XAMPP control panel (or via `systemctl` if you installed the native packages).
 2. Visit the site at `http://localhost/<folder-name>/` (for example, `http://localhost/crunchlabs-clone/`). The `<folder-name>` must match the directory you copied into `htdocs/`—if you renamed the folder to `crunchlab-copy`, browse to `http://localhost/crunchlab-copy/`. The application auto-detects its folder name so navigation links continue to work after renaming.
-3. Open `http://localhost/<folder-name>/admin/products.php` to add, update, or delete products. Because there is no site login, protect access to this page by restricting who can reach your local machine.
+3. Visit `http://localhost/<folder-name>/register.php` to create a customer account or use the seeded admin credentials above on the login page. The account icon (top-right) also links to the login/registration flow.
+4. After signing in you can:
+   - Click any product tile to open its overlay, then add the kit to your cart or save it for later.
+   - Use the **Account** page to review/remove saved items.
+   - Open the **Cart** page to adjust quantities and fill out the shipping/payment form. Submitting the form stores an order and clears the cart so it is ready for the next session.
+5. Administrators can manage products via `http://localhost/<folder-name>/admin/products.php` and review catalog/order stats at `http://localhost/<folder-name>/admin/dashboard.php`. These pages rely solely on your local server access—add authentication before exposing them publicly.
 
 ### Adding or Updating Product Photos
 
 1. Place JPG/PNG/SVG assets under `crunchlabs-clone/assets/img/products/`. A `placeholder.svg` file ships with the repo so the catalog always has a fallback.
 2. When creating a product in the admin dashboard, set **Image Path** to `assets/img/products/<file-name>` (omit the leading slash and folder name). You can also provide a full `http(s)` URL for externally hosted images.
-3. The storefront automatically displays the `name` column as the caption and the auto-increment `id` as the unique product identifier beneath each image.
-4. Add additional products any time—no layout updates are required. The responsive grid expands to fit as many cards as you need.
+3. Choose the appropriate **Category** (Preschool, Primary, High School, University). Each section of the home page reads from that column so products appear under the correct dropdown option.
+4. The storefront automatically displays the `name` column as the caption and the auto-increment `id` as the unique product identifier beneath each image.
+5. Add additional products any time—no layout updates are required. The responsive grid expands to fit as many cards as you need.
 
 ## Troubleshooting
 
@@ -98,4 +113,4 @@ Edit `crunchlabs-clone/config.php` and set `DB_USER` / `DB_PASS` to match your M
 
 ## Security Notice
 
-With the password-only database approach requested for this setup, there are no authentication or CSRF protections on the PHP pages. Do not expose this application to the public internet without adding proper access controls.
+User login, saved items, and cart data rely on PHP sessions and server-side validation, but the admin tools remain unprotected. Keep the project on a trusted local machine or add authentication, CSRF protection, and TLS before deploying anywhere beyond a private lab environment.
