@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#14532d"/>
+  <ellipse cx="320" cy="220" rx="160" ry="110" fill="#bbf7d0"/>
+  <circle cx="240" cy="220" r="36" fill="#22c55e"/>
+  <circle cx="320" cy="220" r="36" fill="#22c55e"/>
+  <circle cx="400" cy="220" r="36" fill="#22c55e"/>
+  <text x="50%" y="85%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#dcfce7" font-weight="600">Bio-Tech Lab</text>
+</svg>

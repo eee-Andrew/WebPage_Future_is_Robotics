@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M0 0 L120 120 M120 0 L0 120" stroke="#38bdf8" stroke-opacity="0.15" stroke-width="8"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#gradient)"/>
+  <rect width="1600" height="900" fill="url(#grid)"/>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="title desc">
+  <title id="title">Placeholder Product Image</title>
+  <desc id="desc">Gray background with diagonal pattern indicating a missing product photo.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M0 0 L40 40 M40 0 L0 40" fill="none" stroke="#d0d7e2" stroke-width="4" opacity="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="480" fill="#f3f5f9"/>
+  <rect width="640" height="480" fill="url(#grid)"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6c7687" font-size="42" font-family="Arial, Helvetica, sans-serif" font-weight="600">Image Coming Soon</text>
+</svg>
