@@ -21,6 +21,11 @@ if ($currentUser && isset($pdo) && $pdo instanceof PDO) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($pageTitle); ?></title>
     <link rel="stylesheet" href="<?= htmlspecialchars(roboforge_url('assets/css/styles.css')); ?>">
+    <?php if (!empty($extraHead) && is_array($extraHead)): ?>
+        <?php foreach ($extraHead as $tag): ?>
+            <?= $tag . "\n"; ?>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </head>
 <body class="<?= htmlspecialchars($bodyClass); ?>">
 <header class="site-header">

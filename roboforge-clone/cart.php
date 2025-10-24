@@ -3,6 +3,7 @@ $pageTitle = 'Your cart';
 $showHero = false;
 $bodyClass = 'cart-page';
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/services/adyen.php';
 roboforge_require_login();
 
 $currentUser = roboforge_current_user();
@@ -48,79 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action) {
         roboforge_redirect('cart.php');
     }
 
-    if ($action === 'checkout') {
-        $requiredFields = [
-            'full_name', 'address_line1', 'city', 'postal_code', 'country',
-            'email', 'phone', 'card_number', 'card_expiry', 'card_cvv'
-        ];
-
-        $errors = [];
-        foreach ($requiredFields as $field) {
-            if (trim((string)($_POST[$field] ?? '')) === '') {
-                $errors[] = 'Please complete all required fields.';
-                break;
-            }
-        }
-
-        $cartItemsStmt = $pdo->prepare('SELECT c.product_id, c.quantity, p.price FROM cart_items c JOIN products p ON p.id = c.product_id WHERE c.user_id = ?');
-        $cartItemsStmt->execute([$currentUser['id']]);
-        $cartItems = $cartItemsStmt->fetchAll();
-
-        if (!$cartItems) {
-            $errors[] = 'Your cart is empty.';
-        }
-
-        if (!$errors) {
-            $total = 0;
-            foreach ($cartItems as $item) {
-                $total += (float) $item['price'] * (int) $item['quantity'];
-            }
-
-            $pdo->beginTransaction();
-            try {
-                $insertOrder = $pdo->prepare('INSERT INTO orders (user_id, total, full_name, address_line1, address_line2, city, postal_code, country, email, phone, card_last4) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-                $cardNumber = preg_replace('/\D+/', '', (string) $_POST['card_number']);
-                $last4 = substr($cardNumber, -4) ?: '0000';
-                $insertOrder->execute([
-                    $currentUser['id'],
-                    $total,
-                    trim((string) $_POST['full_name']),
-                    trim((string) $_POST['address_line1']),
-                    trim((string) ($_POST['address_line2'] ?? '')),
-                    trim((string) $_POST['city']),
-                    trim((string) $_POST['postal_code']),
-                    trim((string) $_POST['country']),
-                    trim((string) $_POST['email']),
-                    trim((string) $_POST['phone']),
-                    $last4,
-                ]);
-                $orderId = (int) $pdo->lastInsertId();
-
-                $insertItem = $pdo->prepare('INSERT INTO order_items (order_id, product_id, quantity, price_each) VALUES (?, ?, ?, ?)');
-                foreach ($cartItems as $item) {
-                    $insertItem->execute([
-                        $orderId,
-                        (int) $item['product_id'],
-                        (int) $item['quantity'],
-                        (float) $item['price'],
-                    ]);
-                }
-
-                $clearCart = $pdo->prepare('DELETE FROM cart_items WHERE user_id = ?');
-                $clearCart->execute([$currentUser['id']]);
-
-                $pdo->commit();
-                roboforge_flash_set('success', 'Thank you! Your order has been placed.');
-            } catch (Throwable $e) {
-                $pdo->rollBack();
-                roboforge_flash_set('error', 'We could not complete your checkout. Please try again.');
-            }
-        } else {
-            roboforge_flash_set('error', $errors[0]);
-        }
-
-        roboforge_redirect('cart.php');
-    }
 }
 
 $itemsStmt = $pdo->prepare('SELECT c.quantity, p.* FROM cart_items c JOIN products p ON p.id = c.product_id WHERE c.user_id = ? ORDER BY p.name ASC');
@@ -132,8 +60,25 @@ foreach ($cartItems as $item) {
     $totalCost += (float) $item['price'] * (int) $item['quantity'];
 }
 
+$extraHead = [];
+if (roboforge_adyen_is_configured()) {
+    $sdkBase = roboforge_adyen_sdk_base();
+    $extraHead[] = '<link rel="stylesheet" href="' . htmlspecialchars($sdkBase . '/adyen.css', ENT_QUOTES, 'UTF-8') . '">';
+    $extraHead[] = '<script defer src="' . htmlspecialchars($sdkBase . '/adyen.js', ENT_QUOTES, 'UTF-8') . '"></script>';
+}
+
+$paymentConfig = [
+    'configUrl' => roboforge_url('payments/config.php'),
+    'createPaymentUrl' => roboforge_url('payments/create.php'),
+    'detailsUrl' => roboforge_url('payments/details.php'),
+    'currency' => ROBOFORGE_CURRENCY,
+];
+
 require_once __DIR__ . '/partials/header.php';
 ?>
+<script>
+window.roboforgePaymentConfig = <?= json_encode($paymentConfig, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+</script>
 <section class="cart-section">
     <h2 data-i18n="cart.title">Your cart</h2>
     <?php if (!$cartItems): ?>
@@ -175,55 +120,59 @@ require_once __DIR__ . '/partials/header.php';
             </div>
             <div class="checkout-form">
                 <h3 data-i18n="checkout.title">Checkout</h3>
-                <form method="post" action="<?= htmlspecialchars(roboforge_url('cart.php')); ?>" class="form-card">
-                    <input type="hidden" name="action" value="checkout">
-                    <label>
-                        <span class="form-label" data-i18n="checkout.name">Full name</span>
-                        <input type="text" name="full_name" required>
-                    </label>
-                    <label>
-                        <span class="form-label" data-i18n="checkout.address1">Address line 1</span>
-                        <input type="text" name="address_line1" required>
-                    </label>
-                    <label>
-                        <span class="form-label" data-i18n="checkout.address2">Address line 2</span>
-                        <input type="text" name="address_line2">
-                    </label>
-                    <label>
-                        <span class="form-label" data-i18n="checkout.city">City</span>
-                        <input type="text" name="city" required>
-                    </label>
-                    <label>
-                        <span class="form-label" data-i18n="checkout.postal">Postal code</span>
-                        <input type="text" name="postal_code" required>
-                    </label>
-                    <label>
-                        <span class="form-label" data-i18n="checkout.country">Country</span>
-                        <input type="text" name="country" required>
-                    </label>
-                    <label>
-                        <span class="form-label" data-i18n="checkout.email">Email</span>
-                        <input type="email" name="email" required>
-                    </label>
-                    <label>
-                        <span class="form-label" data-i18n="checkout.phone">Phone</span>
-                        <input type="tel" name="phone" required>
-                    </label>
-                    <label>
-                        <span class="form-label" data-i18n="checkout.card">Card number</span>
-                        <input type="text" name="card_number" required>
-                    </label>
-                    <div class="card-row">
-                        <label>
-                            <span class="form-label" data-i18n="checkout.expiry">Expiry (MM/YY)</span>
-                            <input type="text" name="card_expiry" required>
-                        </label>
-                        <label>
-                            <span class="form-label" data-i18n="checkout.cvv">CVV</span>
-                            <input type="text" name="card_cvv" required>
+                <form id="checkout-form" class="form-card" novalidate>
+                    <div class="form-field">
+                        <label for="checkout-full-name">
+                            <span class="form-label" data-i18n="checkout.name">Full name</span>
+                            <input type="text" id="checkout-full-name" name="full_name" data-checkout-field required>
                         </label>
                     </div>
-                    <button type="submit" class="cta-button" data-i18n="checkout.submit">Pay now</button>
+                    <div class="form-field">
+                        <label for="checkout-address1">
+                            <span class="form-label" data-i18n="checkout.address1">Address line 1</span>
+                            <input type="text" id="checkout-address1" name="address_line1" data-checkout-field required>
+                        </label>
+                    </div>
+                    <div class="form-field">
+                        <label for="checkout-address2">
+                            <span class="form-label" data-i18n="checkout.address2">Address line 2</span>
+                            <input type="text" id="checkout-address2" name="address_line2" data-checkout-field>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label for="checkout-city">
+                            <span class="form-label" data-i18n="checkout.city">City</span>
+                            <input type="text" id="checkout-city" name="city" data-checkout-field required>
+                        </label>
+                        <label for="checkout-postal">
+                            <span class="form-label" data-i18n="checkout.postal">Postal code</span>
+                            <input type="text" id="checkout-postal" name="postal_code" data-checkout-field required>
+                        </label>
+                    </div>
+                    <div class="form-field">
+                        <label for="checkout-country">
+                            <span class="form-label" data-i18n="checkout.country">Country (ISO code preferred)</span>
+                            <input type="text" id="checkout-country" name="country" data-checkout-field required>
+                        </label>
+                    </div>
+                    <div class="form-field">
+                        <label for="checkout-email">
+                            <span class="form-label" data-i18n="checkout.email">Email</span>
+                            <input type="email" id="checkout-email" name="email" data-checkout-field required>
+                        </label>
+                    </div>
+                    <div class="form-field">
+                        <label for="checkout-phone">
+                            <span class="form-label" data-i18n="checkout.phone">Phone</span>
+                            <input type="tel" id="checkout-phone" name="phone" data-checkout-field required>
+                        </label>
+                    </div>
+                    <div class="form-field payment-component">
+                        <span class="form-label" data-i18n="checkout.paymentTitle">Secure payment</span>
+                        <div id="adyen-dropin" class="adyen-dropin"></div>
+                    </div>
+                    <p class="checkout-note" data-i18n="checkout.secureNote">Card details are encrypted and handled directly by Adyen to keep RoboForge out of PCI scope.</p>
+                    <div id="payment-messages" role="status" aria-live="polite"></div>
                 </form>
             </div>
         </div>

@@ -739,9 +739,54 @@ textarea {
     margin: 0;
 }
 
-.card-row {
+.form-card .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-row {
     display: flex;
     gap: 1rem;
+}
+
+.form-row label {
+    flex: 1 1 0;
+}
+
+.payment-component {
+    margin-top: 0.5rem;
+}
+
+.adyen-dropin {
+    margin-top: 0.5rem;
+}
+
+.checkout-note {
+    font-size: 0.9rem;
+    color: var(--gray);
+}
+
+.payment-message {
+    margin-top: 1rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.payment-message--info {
+    background: #e3f2fd;
+    color: #0d47a1;
+}
+
+.payment-message--success {
+    background: #e6f4ea;
+    color: #0f5132;
+}
+
+.payment-message--error {
+    background: #fdecea;
+    color: #842029;
 }
 
 .admin-dashboard,

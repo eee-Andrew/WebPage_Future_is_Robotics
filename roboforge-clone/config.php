@@ -1,9 +1,37 @@
 <?php
 // Global configuration constants for database access.
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'roboforge');
-define('DB_USER', 'root'); // Update if your MySQL user differs.
-define('DB_PASS', '');     // Fill with your MySQL password if set.
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'roboforge');
+define('DB_USER', getenv('DB_USER') ?: 'root'); // Update if your MySQL user differs.
+define('DB_PASS', getenv('DB_PASS') ?: '');     // Fill with your MySQL password if set.
+
+// Application-wide constants for currency and external integrations.
+define('ROBOFORGE_CURRENCY', strtoupper(getenv('ROBOFORGE_CURRENCY') ?: 'EUR'));
+define('ADYEN_ENVIRONMENT', strtolower(getenv('ADYEN_ENVIRONMENT') ?: 'test'));
+define('ADYEN_MERCHANT_ACCOUNT', getenv('ADYEN_MERCHANT_ACCOUNT') ?: '');
+define('ADYEN_CLIENT_KEY', getenv('ADYEN_CLIENT_KEY') ?: '');
+define('ADYEN_API_KEY', getenv('ADYEN_API_KEY') ?: '');
+define('ADYEN_HMAC_KEY', getenv('ADYEN_HMAC_KEY') ?: '');
+define('PAYMENTS_NOTIFICATION_EMAIL', getenv('PAYMENTS_NOTIFICATION_EMAIL') ?: 'eee.andrew.v@gmail.com');
+
+if (!defined('ADYEN_CHECKOUT_VERSION')) {
+    define('ADYEN_CHECKOUT_VERSION', 'v70');
+}
+
+if (!defined('ADYEN_SDK_VERSION')) {
+    define('ADYEN_SDK_VERSION', '5.61.0');
+}
+
+if (!function_exists('roboforge_uuid')) {
+    function roboforge_uuid(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // version 4
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // variant
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
+}
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();

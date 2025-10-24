@@ -7,7 +7,7 @@ This repository contains a PHP/MySQL web application inspired by the RoboForge l
 - Responsive storefront grouped by learning stage (preschool, primary, high school, university) with product overlays that reveal detailed specs, per-kit IDs, and image captions.
 - Multi-page navigation (Home, Prototypes, Resources) with dropdown menus so every section is reachable even from account or admin pages.
 - Customer accounts with login/registration, saved items, and a persistent cart so each user can resume where they left off.
-- Card-style cart page that lets a customer update quantities and submit shipping + payment details; orders and line items are stored in MySQL for reference.
+- Card-style cart page that lets a customer update quantities and submit shipping details; Adyen Checkout Components handle card entry, 3-D Secure 2 challenges, and tokenization so no raw PAN data touches the server.
 - English/Greek language toggle that updates navigation, hero copy, and section headings without leaving the page.
 - Simple admin pages for adding/removing products (name, short/long description, category, price, quantity, image path) alongside basic catalog/order metrics.
 - Sample catalog data, SVG placeholders, and helper functions that keep URLs working even if you rename the project folder.
@@ -82,6 +82,15 @@ roboforge-clone/
 ├── logout.php
 ├── prototypes.php
 ├── register.php
+├── payments/
+│   ├── config.php
+│   ├── create.php
+│   └── details.php
+├── services/
+│   ├── adyen.php
+│   └── mailer.php
+├── webhooks/
+│   └── adyen.php
 └── resources.php
 ```
 
@@ -91,6 +100,23 @@ Copy the entire `roboforge-clone` directory into your local web root (`htdocs/` 
 
 Edit `roboforge-clone/config.php` and set `DB_USER` / `DB_PASS` to match your MySQL credentials. The default assumes the MySQL `root` user with an empty password (XAMPP default).
 
+### Adyen Checkout configuration
+
+To stay inside PCI DSS **SAQ A** scope the app delegates all card handling to Adyen. Provide the following environment variables (or edit `config.php` directly) before using the cart checkout:
+
+| Variable | Purpose |
+| --- | --- |
+| `ADYEN_API_KEY` | Server-side API key with access to the Checkout API. |
+| `ADYEN_CLIENT_KEY` | Client key for the Web Components. |
+| `ADYEN_MERCHANT_ACCOUNT` | Your Adyen merchant account name. |
+| `ADYEN_HMAC_KEY` | HMAC signature key for verifying webhooks. |
+| `ADYEN_ENVIRONMENT` | `test` (default) or `live`. |
+| `PAYMENTS_NOTIFICATION_EMAIL` | Operations email address for payment alerts (defaults to `eee.andrew.v@gmail.com`). |
+
+Add them to your Apache/PHP environment (for example, via `.env`, `httpd.conf`, or XAMPP Control Panel ➜ **Config** ➜ **Apache (httpd-xampp.conf)**) and restart Apache. When the values are missing the cart will show a “Payment unavailable” message instead of rendering the drop-in component.
+
+The checkout endpoints call Adyen’s `/paymentMethods`, `/payments`, and `/payments/details` APIs, enforce 3DS2 (`allow3DS2=true`), and rely on Adyen-hosted card fields so no card numbers, CVV, or expiry data is stored in MySQL.
+
 ## Running the Site
 
 1. Start Apache and MySQL from the XAMPP control panel (or via `systemctl` if you installed the native packages).
@@ -99,7 +125,7 @@ Edit `roboforge-clone/config.php` and set `DB_USER` / `DB_PASS` to match your My
 4. After signing in you can:
    - Click any product tile to open its overlay, then add the kit to your cart or save it for later.
    - Use the **Account** page to review/remove saved items.
-   - Open the **Cart** page to adjust quantities and fill out the shipping/payment form. Submitting the form stores an order and clears the cart so it is ready for the next session.
+   - Open the **Cart** page to adjust quantities and fill out the shipping form. When you press the Adyen drop-in button it creates an order, redirects you through Strong Customer Authentication (3DS2), and clears the cart after Adyen authorises the payment.
    - Switch between **Home**, **Prototypes**, and **Resources** using the dropdown menus—the same links appear in the footer for quick access from any page.
 5. Administrators can manage products via `http://localhost/<folder-name>/admin/products.php` and review catalog/order stats at `http://localhost/<folder-name>/admin/dashboard.php`. These pages rely solely on your local server access—add authentication before exposing them publicly.
 
@@ -116,7 +142,16 @@ Edit `roboforge-clone/config.php` and set `DB_USER` / `DB_PASS` to match your My
 - **Access forbidden / blank page** – confirm the project folder is inside the XAMPP `htdocs` directory (or `/var/www/html` on Linux) and that file permissions allow Apache to read the files.
 - **Database connection failed** – confirm the MySQL service is running (green indicator inside XAMPP), the credentials in `config.php` match your MySQL setup, and that the `roboforge` database/tables were created from `database.sql`.
 - **"MySQL server has gone away"** – this indicates the database service dropped the connection (often after it has been idle). Start MySQL before loading the site and refresh the page—the application will automatically re-establish the connection using the retry logic in `db.php` when the service comes back online.
+- **Adyen drop-in shows “Payment unavailable”** – supply the Adyen environment variables above and reload the cart page. For live traffic, double-check that the merchant account is enabled for 3DS2 and that webhooks are configured with the HMAC key listed in `ADYEN_HMAC_KEY`.
+- **Webhook not updating order status** – confirm Adyen is posting to `/webhooks/adyen.php`, the HMAC key matches, and your server returns `[accepted]`. The webhook handler writes every payload into `webhook_events` (including unprocessed ones) so you can inspect failures in MySQL.
 
 ## Security Notice
 
 User login, saved items, and cart data rely on PHP sessions and server-side validation, but the admin tools remain unprotected. Keep the project on a trusted local machine or add authentication, CSRF protection, and TLS before deploying anywhere beyond a private lab environment.
+
+### Payment security & compliance
+
+- Card information never reaches the server—Adyen’s Web Components render the card fields inside iframes, encrypt data in the browser, and exchange it directly with Adyen’s Checkout API.
+- Checkout requests always include `allow3DS2=true` and expect 3-D Secure challenges to satisfy PSD2 Strong Customer Authentication requirements for EU cards.
+- The database stores only Adyen references (merchant reference, PSP reference, result codes, token IDs, brand/last4) plus shipping/contact details required for fulfilment. No PAN, CVV, or sensitive authentication data is persisted.
+- Webhooks are validated with Adyen’s HMAC signature, recorded in the `webhook_events` table, and drive the authoritative payment state while also notifying `PAYMENTS_NOTIFICATION_EMAIL` about authorisations, refusals, refunds, and chargebacks.

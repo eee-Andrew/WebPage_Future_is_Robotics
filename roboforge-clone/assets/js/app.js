@@ -88,13 +88,17 @@
             'checkout.address2': 'Address line 2',
             'checkout.city': 'City',
             'checkout.postal': 'Postal code',
-            'checkout.country': 'Country',
+            'checkout.country': 'Country (ISO code preferred)',
             'checkout.email': 'Email',
             'checkout.phone': 'Phone',
-            'checkout.card': 'Card number',
-            'checkout.expiry': 'Expiry (MM/YY)',
-            'checkout.cvv': 'CVV',
-            'checkout.submit': 'Pay now',
+            'checkout.paymentTitle': 'Secure payment',
+            'checkout.secureNote': 'Card details are encrypted and handled directly by Adyen to keep RoboForge out of PCI scope.',
+            'checkout.processing': 'Processing your payment…',
+            'checkout.success': 'Payment authorised! We will email your receipt shortly.',
+            'checkout.pending': 'Action required — please follow the 3D Secure prompt.',
+            'checkout.errorConfig': 'Payment is temporarily unavailable. Please contact support.',
+            'checkout.errorValidation': 'Please complete all required shipping fields before paying.',
+            'checkout.errorPayment': 'We could not process the payment. Please try another method.',
             'footer.about': 'About',
             'footer.faq': 'FAQ',
             'footer.contact': 'Contact',
@@ -173,13 +177,17 @@
             'checkout.address2': 'Διεύθυνση (γραμμή 2)',
             'checkout.city': 'Πόλη',
             'checkout.postal': 'Ταχυδρομικός κώδικας',
-            'checkout.country': 'Χώρα',
+            'checkout.country': 'Χώρα (προτιμάται ο κωδικός ISO)',
             'checkout.email': 'Ηλεκτρονικό ταχυδρομείο',
             'checkout.phone': 'Τηλέφωνο',
-            'checkout.card': 'Αριθμός κάρτας',
-            'checkout.expiry': 'Λήξη (ΜΜ/ΕΕ)',
-            'checkout.cvv': 'CVV',
-            'checkout.submit': 'Πληρωμή τώρα',
+            'checkout.paymentTitle': 'Ασφαλής πληρωμή',
+            'checkout.secureNote': 'Τα στοιχεία κάρτας κρυπτογραφούνται και διαχειρίζονται απευθείας από την Adyen ώστε το RoboForge να παραμένει εκτός PCI scope.',
+            'checkout.processing': 'Επεξεργασία πληρωμής…',
+            'checkout.success': 'Η πληρωμή εγκρίθηκε! Θα στείλουμε την απόδειξη σύντομα.',
+            'checkout.pending': 'Απαιτείται ενέργεια — ακολουθήστε την προτροπή 3D Secure.',
+            'checkout.errorConfig': 'Η πληρωμή δεν είναι διαθέσιμη προσωρινά. Επικοινωνήστε με την υποστήριξη.',
+            'checkout.errorValidation': 'Συμπληρώστε όλα τα υποχρεωτικά στοιχεία αποστολής πριν την πληρωμή.',
+            'checkout.errorPayment': 'Δεν μπορέσαμε να ολοκληρώσουμε την πληρωμή. Δοκιμάστε άλλη μέθοδο.',
             'footer.about': 'Σχετικά',
             'footer.faq': 'Συχνές ερωτήσεις',
             'footer.contact': 'Επικοινωνία',
@@ -284,8 +292,11 @@
         });
     });
 
+    let activeLanguage = localStorage.getItem('roboforge-lang') || 'en';
+
     function applyLanguage(lang) {
         const language = translations[lang] ? lang : 'en';
+        activeLanguage = language;
         document.documentElement.lang = language === 'el' ? 'el' : 'en';
         document.querySelectorAll('[data-i18n]').forEach(element => {
             const key = element.getAttribute('data-i18n');
@@ -314,14 +325,205 @@
         localStorage.setItem('roboforge-lang', language);
     }
 
-    const storedLang = localStorage.getItem('roboforge-lang') || 'en';
-    applyLanguage(storedLang);
+    applyLanguage(activeLanguage);
 
     if (languageToggle) {
         languageToggle.addEventListener('click', () => {
-            const current = localStorage.getItem('roboforge-lang') || 'en';
-            const next = current === 'en' ? 'el' : 'en';
+            const next = activeLanguage === 'en' ? 'el' : 'en';
             applyLanguage(next);
         });
+    }
+
+    function translate(key) {
+        const bundle = translations[activeLanguage] || {};
+        if (bundle[key]) {
+            return bundle[key];
+        }
+        return translations.en[key] || key;
+    }
+
+    const checkoutForm = document.getElementById('checkout-form');
+    const dropinContainer = document.getElementById('adyen-dropin');
+    const paymentMessages = document.getElementById('payment-messages');
+
+    if (checkoutForm && dropinContainer) {
+        checkoutForm.addEventListener('submit', event => event.preventDefault());
+
+        const paymentConfig = window.roboforgePaymentConfig || null;
+        let currentPaymentId = null;
+
+        function setPaymentMessage(type, message) {
+            if (!paymentMessages) {
+                return;
+            }
+            paymentMessages.textContent = message;
+            paymentMessages.className = 'payment-message payment-message--' + type;
+        }
+
+        function collectShippingData() {
+            const data = {};
+            let valid = true;
+            checkoutForm.querySelectorAll('[data-checkout-field]').forEach(input => {
+                const name = input.getAttribute('name');
+                if (!name) {
+                    return;
+                }
+                const value = input.value.trim();
+                data[name] = value;
+                if (input.hasAttribute('required') && value === '') {
+                    valid = false;
+                }
+            });
+            return { data, valid };
+        }
+
+        function waitForAdyen() {
+            return new Promise((resolve, reject) => {
+                if (window.AdyenCheckout) {
+                    resolve(window.AdyenCheckout);
+                    return;
+                }
+                const timeout = setTimeout(() => reject(new Error('Adyen SDK failed to load')), 10000);
+                const check = () => {
+                    if (window.AdyenCheckout) {
+                        clearTimeout(timeout);
+                        resolve(window.AdyenCheckout);
+                    } else {
+                        requestAnimationFrame(check);
+                    }
+                };
+                check();
+            });
+        }
+
+        function handleFinalResult(result, component) {
+            const code = result.resultCode || '';
+            if (code === 'Authorised') {
+                setPaymentMessage('success', translate('checkout.success'));
+                component.setStatus('success');
+                setTimeout(() => window.location.reload(), 1500);
+                return;
+            }
+            if (code === 'Pending' || code === 'Received') {
+                setPaymentMessage('info', translate('checkout.pending'));
+                component.setStatus('ready');
+                return;
+            }
+            const message = result.error || translate('checkout.errorPayment');
+            setPaymentMessage('error', message);
+            component.setStatus('ready');
+        }
+
+        async function handleAdditionalDetails(state, component) {
+            if (!currentPaymentId) {
+                component.setStatus('ready');
+                return;
+            }
+            try {
+                const response = await fetch(paymentConfig.detailsUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        paymentId: currentPaymentId,
+                        details: state.data,
+                    }),
+                });
+                const payload = await response.json();
+                if (!response.ok || payload.error) {
+                    throw new Error(payload.error || translate('checkout.errorPayment'));
+                }
+                handleFinalResult(payload, component);
+            } catch (error) {
+                console.error('Adyen additional details error', error);
+                setPaymentMessage('error', error.message || translate('checkout.errorPayment'));
+                component.setStatus('ready');
+            }
+        }
+
+        async function handlePayment(state, component, configData) {
+            const shipping = collectShippingData();
+            if (!shipping.valid) {
+                setPaymentMessage('error', translate('checkout.errorValidation'));
+                component.setStatus('ready');
+                return;
+            }
+            component.setStatus('loading');
+            setPaymentMessage('info', translate('checkout.processing'));
+            try {
+                const response = await fetch(paymentConfig.createPaymentUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        shipping: shipping.data,
+                        paymentMethod: state.data.paymentMethod,
+                        browserInfo: state.data.browserInfo,
+                        billingAddress: state.data.billingAddress || null,
+                        storePaymentMethod: state.data.storePaymentMethod || false,
+                        amount: configData.amount,
+                    }),
+                });
+                const payload = await response.json();
+                if (!response.ok || payload.error) {
+                    throw new Error(payload.error || translate('checkout.errorPayment'));
+                }
+                currentPaymentId = payload.paymentId || null;
+                if (payload.action) {
+                    setPaymentMessage('info', translate('checkout.pending'));
+                    component.handleAction(payload.action);
+                    return;
+                }
+                handleFinalResult(payload, component);
+            } catch (error) {
+                console.error('Adyen payment error', error);
+                setPaymentMessage('error', error.message || translate('checkout.errorPayment'));
+                component.setStatus('ready');
+            }
+        }
+
+        async function initialiseCheckout() {
+            if (!paymentConfig || !paymentConfig.configUrl) {
+                setPaymentMessage('error', translate('checkout.errorConfig'));
+                return;
+            }
+            try {
+                const response = await fetch(paymentConfig.configUrl, { credentials: 'same-origin' });
+                const payload = await response.json();
+                if (!response.ok || payload.error) {
+                    throw new Error(payload.error || translate('checkout.errorConfig'));
+                }
+                await waitForAdyen();
+                const checkout = await AdyenCheckout({
+                    environment: payload.environment,
+                    clientKey: payload.clientKey,
+                    analytics: { enabled: false },
+                    locale: payload.locale || (activeLanguage === 'el' ? 'el-GR' : 'en-US'),
+                    paymentMethodsResponse: payload.paymentMethodsResponse,
+                    amount: payload.amount,
+                    onSubmit: (state, component) => handlePayment(state, component, payload),
+                    onAdditionalDetails: handleAdditionalDetails,
+                    onError: error => {
+                        console.error('Adyen drop-in error', error);
+                        setPaymentMessage('error', translate('checkout.errorPayment'));
+                    },
+                    paymentMethodsConfiguration: {
+                        card: {
+                            hasHolderName: true,
+                            holderNameRequired: true,
+                            showPayButton: true,
+                            enableStoreDetails: true,
+                            billingAddressRequired: true,
+                        },
+                    },
+                });
+                checkout.create('dropin').mount(dropinContainer);
+            } catch (error) {
+                console.error('Adyen initialisation error', error);
+                setPaymentMessage('error', error.message || translate('checkout.errorConfig'));
+            }
+        }
+
+        initialiseCheckout();
     }
 })();

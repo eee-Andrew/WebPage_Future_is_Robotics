@@ -52,7 +52,9 @@ CREATE TABLE IF NOT EXISTS cart_items (
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
+    status ENUM('PendingPayment','Paid','Failed','Cancelled') NOT NULL DEFAULT 'PendingPayment',
     total DECIMAL(10,2) NOT NULL,
+    currency CHAR(3) NOT NULL DEFAULT 'EUR',
     full_name VARCHAR(150) NOT NULL,
     address_line1 VARCHAR(255) NOT NULL,
     address_line2 VARCHAR(255),
@@ -61,9 +63,25 @@ CREATE TABLE IF NOT EXISTS orders (
     country VARCHAR(120) NOT NULL,
     email VARCHAR(255) NOT NULL,
     phone VARCHAR(60) NOT NULL,
-    card_last4 CHAR(4) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+    id CHAR(36) PRIMARY KEY,
+    order_id INT NOT NULL,
+    merchant_reference VARCHAR(255) NOT NULL,
+    adyen_psp_reference VARCHAR(100),
+    status ENUM('Pending','Authorised','Refused','Cancelled','Error','Chargeback','Refunded') NOT NULL DEFAULT 'Pending',
+    amount_minor INT NOT NULL,
+    currency CHAR(3) NOT NULL,
+    payment_method_type VARCHAR(50),
+    result_code VARCHAR(50),
+    three_ds_result VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_payments_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -74,6 +92,46 @@ CREATE TABLE IF NOT EXISTS order_items (
     PRIMARY KEY (order_id, product_id),
     CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS adyen_shoppers (
+    user_id INT PRIMARY KEY,
+    shopper_reference VARCHAR(191) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    billing_country VARCHAR(2),
+    ip_country VARCHAR(2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_shoppers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS payment_tokens (
+    id CHAR(36) PRIMARY KEY,
+    shopper_reference VARCHAR(191) NOT NULL,
+    recurring_detail_reference VARCHAR(100) NOT NULL,
+    stored_payment_method_id VARCHAR(100),
+    brand VARCHAR(50),
+    card_last4 CHAR(4),
+    expiry_month CHAR(2),
+    expiry_year CHAR(4),
+    recurring_processing_model ENUM('CardOnFile','Subscription','UnscheduledCardOnFile') DEFAULT 'CardOnFile',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_shopper_detail (shopper_reference, recurring_detail_reference)
+);
+
+CREATE TABLE IF NOT EXISTS webhook_events (
+    id CHAR(36) PRIMARY KEY,
+    event_date DATETIME NOT NULL,
+    event_code VARCHAR(60) NOT NULL,
+    success TINYINT(1) NOT NULL,
+    psp_reference VARCHAR(100) NOT NULL,
+    original_reference VARCHAR(100),
+    payload JSON,
+    processed TINYINT(1) NOT NULL DEFAULT 0,
+    processed_at DATETIME NULL,
+    KEY idx_webhook_reference (psp_reference),
+    KEY idx_webhook_processed (processed)
 );
 
 INSERT INTO product_categories (slug, label) VALUES
