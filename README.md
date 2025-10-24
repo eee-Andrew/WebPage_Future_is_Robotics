@@ -72,6 +72,26 @@ Edit `crunchlabs-clone/config.php` and set `DB_USER` / `DB_PASS` to match your M
 
 Add product images to `crunchlabs-clone/assets/img/` and reference them via the **Image Path** field on the admin product form.
 
+## Viewing Accounts in the Database
+
+Once MySQL is running you can inspect the stored users (including their roles and password hashes) either through phpMyAdmin or
+the MySQL shell:
+
+### Option A: phpMyAdmin (bundled with XAMPP)
+1. Open `http://localhost/phpmyadmin/` in your browser.
+2. Sign in with your MySQL credentials (XAMPP default is user `root` with an empty password unless you changed it).
+3. In the left sidebar choose the `crunchlabs` database, then click the `users` table.
+4. phpMyAdmin will list every account along with the `role` column so you can confirm who is an admin.
+
+### Option B: MySQL command line
+1. Open the XAMPP **Shell** (or any terminal) and run `mysql -u root -p` (omit `-p` if your root account has no password).
+2. Select the database: `USE crunchlabs;`
+3. Query the table: `SELECT id, email, role, created_at FROM users;`
+4. To exit the shell type `exit`.
+
+Passwords are stored as secure hashes, so you will not see the original plain-text password—only the hashed value in the
+`password_hash` column.
+
 ## Security Notes
 
 - This project is intended for local demos. For production use, add CSRF protection, stricter validation, HTTPS, and proper password policies.
