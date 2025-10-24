@@ -70,7 +70,9 @@ Edit `crunchlabs-clone/config.php` and set `DB_USER` / `DB_PASS` to match your M
 ## Running the Site
 
 1. Start Apache and MySQL from the XAMPP control panel (or via `systemctl` if you installed the native packages).
-2. Visit `http://localhost/crunchlabs-clone/` to browse the product catalog presented to customers.
+2. Visit the site at `http://localhost/<folder-name>/` (for example, `http://localhost/crunchlabs-clone/`). The `<folder-name>`
+   must match the directory you copied into `htdocs/`—if you renamed the folder to `crunchlab-copy`, the URL becomes
+   `http://localhost/crunchlab-copy/`.
 3. Register a new account or log in using the seeded admin credentials (`admin@example.com` / `AdminPass123!`).
 4. Admins can manage products at `http://localhost/crunchlabs-clone/admin/products.php`.
 
