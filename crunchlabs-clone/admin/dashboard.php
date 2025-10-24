@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../db.php';
 
 if (empty($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-    header('Location: /crunchlabs-clone/login.php');
+    header('Location: ' . crunchlabs_url('login.php'));
     exit;
 }
 
@@ -30,6 +30,6 @@ require_once __DIR__ . '/../partials/header.php';
             <p><?= (int)$lowStock; ?></p>
         </div>
     </div>
-    <a class="btn-secondary" href="/crunchlabs-clone/admin/products.php">Manage Products</a>
+    <a class="btn-secondary" href="<?= htmlspecialchars(crunchlabs_url('admin/products.php')); ?>">Manage Products</a>
 </section>
 <?php require_once __DIR__ . '/../partials/footer.php'; ?>

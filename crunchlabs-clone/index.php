@@ -7,6 +7,7 @@ require_once __DIR__ . '/partials/header.php';
 
 $stmt = $pdo->query('SELECT * FROM products ORDER BY name ASC');
 $products = $stmt->fetchAll();
+$fallbackImage = crunchlabs_url('assets/img/products/placeholder.svg');
 ?>
 <section class="catalog-header">
     <h1>Browse Our Robotics Kits</h1>
@@ -20,7 +21,7 @@ $products = $stmt->fetchAll();
         <div class="product-grid">
             <?php foreach ($products as $product): ?>
                 <?php
-                    $imagePath = $product['image_path'] ?: '/crunchlabs-clone/assets/img/products/placeholder.svg';
+                    $imagePath = crunchlabs_public_path($product['image_path'], $fallbackImage);
                     $description = $product['description'] ?: 'Stay tuned for more details on this build!';
                 ?>
                 <article class="product-card" data-product-id="<?= (int) $product['id']; ?>">

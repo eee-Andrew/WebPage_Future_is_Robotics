@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $insert = $pdo->prepare('INSERT INTO users (email, password_hash) VALUES (?, ?)');
                 $insert->execute([$email, $hash]);
                 regenerate_csrf_token();
-                header('Location: login.php?registered=1');
+                header('Location: ' . crunchlabs_url('login.php?registered=1'));
                 exit;
             }
         }

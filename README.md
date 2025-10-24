@@ -71,15 +71,17 @@ Edit `crunchlabs-clone/config.php` and set `DB_USER` / `DB_PASS` to match your M
 
 1. Start Apache and MySQL from the XAMPP control panel (or via `systemctl` if you installed the native packages).
 2. Visit the site at `http://localhost/<folder-name>/` (for example, `http://localhost/crunchlabs-clone/`). The `<folder-name>`
-   must match the directory you copied into `htdocs/`—if you renamed the folder to `crunchlab-copy`, the URL becomes
-   `http://localhost/crunchlab-copy/`.
+   must match the directory you copied into `htdocs/`—if you renamed the folder to `crunchlab-copy`, browse to
+   `http://localhost/crunchlab-copy/`. The application auto-detects its folder name so navigation links and redirects continue
+   to work after renaming.
 3. Register a new account or log in using the seeded admin credentials (`admin@example.com` / `AdminPass123!`).
-4. Admins can manage products at `http://localhost/crunchlabs-clone/admin/products.php`.
+4. Admins can manage products at `http://localhost/<folder-name>/admin/products.php`.
 
 ### Adding or Updating Product Photos
 
 1. Place JPG/PNG/SVG assets under `crunchlabs-clone/assets/img/products/`. A `placeholder.svg` file ships with the repo so the catalog always has a fallback.
-2. When creating or editing a product in the admin dashboard, set **Image Path** to `/crunchlabs-clone/assets/img/products/<file-name>`.
+2. When creating or editing a product in the admin dashboard, set **Image Path** to `assets/img/products/<file-name>` (omit the
+   leading slash and folder name). You can also provide a full `http(s)` URL for externally hosted images.
 3. The storefront automatically displays the `name` column as the caption and the auto-increment `id` as the unique product identifier beneath each image.
 4. Add additional products any time—no layout updates are required. The responsive grid expands to fit as many cards as you need.
 

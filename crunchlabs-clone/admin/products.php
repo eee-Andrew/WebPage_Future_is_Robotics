@@ -3,7 +3,7 @@ require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../security.php';
 
 if (empty($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-    header('Location: /crunchlabs-clone/login.php');
+    header('Location: ' . crunchlabs_url('login.php'));
     exit;
 }
 
@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $price = filter_var($_POST['price'] ?? null, FILTER_VALIDATE_FLOAT);
             $quantity = filter_var($_POST['quantity'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
             $imagePath = trim($_POST['image_path'] ?? '');
+            $storedImagePath = null;
 
             if ($name === '') {
                 $errors[] = 'Name required.';
@@ -43,8 +44,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($quantity === false || $quantity < 0) {
                 $errors[] = 'Quantity cannot be negative.';
             }
-            if ($imagePath !== '' && strpos($imagePath, '/crunchlabs-clone/assets/img/products/') !== 0) {
-                $errors[] = 'Image Path must point to /crunchlabs-clone/assets/img/products/.';
+            if ($imagePath !== '') {
+                if (preg_match('#^https?://#i', $imagePath)) {
+                    $storedImagePath = $imagePath;
+                } else {
+                    $normalized = ltrim($imagePath, '/');
+                    $base = trim(APP_BASE_PATH, '/');
+                    if ($base !== '' && strpos($normalized, $base . '/') === 0) {
+                        $normalized = substr($normalized, strlen($base) + 1);
+                    }
+
+                    if (strpos($normalized, 'assets/img/products/') !== 0) {
+                        $errors[] = 'Image Path must point to assets/img/products/ or be an absolute URL.';
+                    } else {
+                        $storedImagePath = $normalized;
+                    }
+                }
             }
 
             if (!$errors) {
@@ -54,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $description,
                     $price,
                     $quantity,
-                    $imagePath !== '' ? $imagePath : null,
+                    $storedImagePath !== null ? $storedImagePath : null,
                 ]);
                 regenerate_csrf_token();
                 header('Location: products.php?added=1');
@@ -89,7 +104,7 @@ require_once __DIR__ . '/../partials/header.php';
         <label>Description<textarea name="description" rows="3"></textarea></label>
         <label>Price<input type="number" step="0.01" name="price" required></label>
         <label>Quantity<input type="number" name="quantity" min="0" required></label>
-        <label>Image Path<input type="text" name="image_path" placeholder="/crunchlabs-clone/assets/img/products/robot-kit.jpg"></label>
+        <label>Image Path<input type="text" name="image_path" placeholder="assets/img/products/robot-kit.jpg"></label>
         <button type="submit" class="cta-button">Add Product</button>
         <input type="hidden" name="action" value="create">
     </form>

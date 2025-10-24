@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 regenerate_csrf_token();
                 unset($user['password_hash']);
                 $_SESSION['user'] = $user;
-                header('Location: index.php');
+                header('Location: ' . crunchlabs_url('index.php'));
                 exit;
             }
         }
