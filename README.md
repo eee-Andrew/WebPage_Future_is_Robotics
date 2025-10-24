@@ -33,8 +33,20 @@ Make sure the `pdo_mysql` extension is enabled in your `php.ini` (uncomment `ext
 ## Database Setup
 
 1. Launch the MySQL shell (`mysql -u root -p`).
-2. Run the SQL statements in [`crunchlabs-clone/database.sql`](crunchlabs-clone/database.sql) to create the `crunchlabs` database, the `products` table, and sample catalog rows.
-3. Your MariaDB/MySQL account password is the only credential required to manage the site.
+2. From the `MariaDB [(none)]>` prompt, run the script with MySQL's `SOURCE` command:
+
+   ```sql
+   SOURCE C:/xampp/htdocs/crunchlabs-clone/database.sql;
+   ```
+
+   Adjust the path if your folder lives elsewhere. On macOS/Linux the command looks like `SOURCE /Applications/XAMPP/htdocs/crunchlabs-clone/database.sql;` (note the forward slashes).
+3. After the script finishes you should see `Database changed` followed by a series of `Query OK` messages. You can confirm the data is ready with:
+
+   ```sql
+   USE crunchlabs;
+   SELECT id, name, price FROM products;
+   ```
+4. Your MariaDB/MySQL account password is the only credential required to manage the site.
 
 ## Project Structure
 
