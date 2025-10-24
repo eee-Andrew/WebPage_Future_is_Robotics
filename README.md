@@ -111,3 +111,9 @@ The original prototype left several openings that could be abused. The current v
 - **Logout sanitization:** Session data and cookies are fully cleared before redirecting to the storefront.
 
 For production deployments you should still enforce HTTPS, add rate limiting to login attempts, and consider stronger password and audit policies.
+
+## Troubleshooting
+
+- **Access forbidden / blank page** – confirm the project folder is inside the XAMPP `htdocs` directory (or `/var/www/html` on Linux) and that file permissions allow Apache to read the files.
+- **Database connection failed** – confirm the MySQL service is running (green indicator inside XAMPP), the credentials in `config.php` match your MySQL setup, and that the `crunchlabs` database/tables were created from `database.sql`.
+- **"MySQL server has gone away"** – this indicates the database service dropped the connection (often after it has been idle). Start MySQL before loading the site and refresh the page—the application will automatically re-establish the connection using the retry logic in `db.php` when the service comes back online.
