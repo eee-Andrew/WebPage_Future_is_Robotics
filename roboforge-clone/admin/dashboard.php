@@ -31,7 +31,7 @@ require_once __DIR__ . '/../partials/header.php';
         </div>
     </div>
     <div class="admin-actions">
-        <a class="btn-secondary" href="<?= htmlspecialchars(crunchlabs_url('admin/products.php')); ?>">Manage Products</a>
+        <a class="btn-secondary" href="<?= htmlspecialchars(roboforge_url('admin/products.php')); ?>">Manage Products</a>
     </div>
 </section>
 <?php require_once __DIR__ . '/../partials/footer.php'; ?>

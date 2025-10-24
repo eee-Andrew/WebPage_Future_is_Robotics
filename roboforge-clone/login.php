@@ -6,7 +6,7 @@ require_once __DIR__ . '/db.php';
 
 $errors = [];
 $email = '';
-$redirect = $_GET['redirect'] ?? $_POST['redirect'] ?? crunchlabs_url('account.php');
+$redirect = $_GET['redirect'] ?? $_POST['redirect'] ?? roboforge_url('account.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim((string)($_POST['email'] ?? ''));
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'name' => $user['name'],
             ];
 
-            crunchlabs_flash_set('success', 'Welcome back, ' . $user['name'] . '!');
+            roboforge_flash_set('success', 'Welcome back, ' . $user['name'] . '!');
             header('Location: ' . $redirect);
             exit;
         }
@@ -58,6 +58,6 @@ require_once __DIR__ . '/partials/header.php';
         </label>
         <button type="submit" class="cta-button" data-i18n="auth.loginButton">Log in</button>
     </form>
-    <p><span data-i18n="auth.registerPromptText">Need an account?</span> <a href="<?= htmlspecialchars(crunchlabs_url('register.php?redirect=' . urlencode($redirect))); ?>" data-i18n="auth.registerLink">Create one</a>.</p>
+    <p><span data-i18n="auth.registerPromptText">Need an account?</span> <a href="<?= htmlspecialchars(roboforge_url('register.php?redirect=' . urlencode($redirect))); ?>" data-i18n="auth.registerLink">Create one</a>.</p>
 </section>
 <?php require_once __DIR__ . '/partials/footer.php'; ?>

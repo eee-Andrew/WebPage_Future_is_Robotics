@@ -32,7 +32,8 @@ body.catalog-page {
 body.auth-page,
 body.account-page,
 body.cart-page,
-body.admin-page {
+body.admin-page,
+body.resources-page {
     background: #f6f8fc;
 }
 
@@ -46,12 +47,12 @@ a:focus {
 }
 
 .site-header {
-    background: linear-gradient(135deg, rgba(16, 24, 32, 0.95), rgba(16, 24, 32, 0.8));
+    background: #101820;
     color: #fff;
-    padding: 1.5rem 2rem 2.5rem;
+    padding: 1rem 2rem;
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: 30;
 }
 
 .navbar {
@@ -83,22 +84,57 @@ a:focus {
     position: relative;
 }
 
-.nav-trigger {
-    background: none;
-    border: none;
+.nav-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.nav-link {
+    text-decoration: none;
     color: #fff;
     font-size: 0.95rem;
     font-weight: 600;
-    cursor: pointer;
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
     transition: background 0.2s ease;
 }
 
-.nav-trigger:focus,
-.nav-trigger:hover {
+.nav-link:hover,
+.nav-link:focus {
     background: rgba(255, 255, 255, 0.12);
-    outline: none;
+}
+
+.nav-trigger {
+    width: 1.75rem;
+    height: 1.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s ease;
+}
+
+.nav-trigger::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: translate(-50%, -60%) rotate(45deg);
+}
+
+.nav-item.open > .nav-item-header > .nav-trigger::after {
+    transform: translate(-50%, -40%) rotate(225deg);
+}
+
+.nav-trigger:hover,
+.nav-trigger:focus {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .dropdown {
@@ -223,20 +259,32 @@ a:focus {
     background: rgba(255, 255, 255, 0.18);
 }
 
-.hero-content {
-    max-width: 640px;
-    margin-top: 2.5rem;
+.hero {
+    background: linear-gradient(135deg, rgba(16, 24, 32, 0.92), rgba(16, 24, 32, 0.78)),
+        url('../img/hero-bg.svg') center/cover no-repeat;
+    color: #fff;
+    padding: 4.5rem 2rem 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
-.hero-content h1 {
+.hero-inner {
+    max-width: 720px;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.hero-inner h1 {
     font-size: clamp(2.5rem, 4vw, 3.5rem);
-    margin-bottom: 1rem;
+    margin: 0;
 }
 
-.hero-content p {
-    font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.85);
-    margin-bottom: 1.5rem;
+.hero-inner p {
+    font-size: 1.15rem;
+    color: rgba(255, 255, 255, 0.88);
+    margin: 0;
 }
 
 .cta-button {
@@ -335,6 +383,11 @@ main {
 .info-section h2,
 .catalog-intro h2 {
     font-size: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.info-section h3 {
+    font-size: 1.4rem;
     margin-bottom: 0.75rem;
 }
 
@@ -799,8 +852,8 @@ textarea {
         order: 2;
     }
 
-    .hero-content {
-        margin-top: 1.5rem;
+    .hero-inner {
+        margin-top: 1rem;
     }
 
     main {

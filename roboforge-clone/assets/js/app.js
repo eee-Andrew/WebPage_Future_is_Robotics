@@ -31,7 +31,7 @@
             'nav.account': 'Account',
             'nav.cartShort': 'Cart',
             'nav.logout': 'Logout',
-            'hero.title': 'Future of Robotics Starts Here',
+            'hero.title': 'Forge your future in robotics',
             'hero.subtitle': 'Interactive kits, challenges, and community—all in one place.',
             'hero.cta': 'Explore kits',
             'who.title': 'Who we are',
@@ -42,6 +42,8 @@
             'future.text': 'Robotics unlocks creative confidence, problem solving, and collaboration. Our community shares monthly missions, live workshops, and research briefs so every builder can keep learning.',
             'catalog.title': 'Explore our prototypes',
             'catalog.subtitle': 'Select a category below to open detailed layers for each kit, add them to your cart, or save them for later.',
+            'catalog.compareTitle': 'Compare every RoboForge prototype',
+            'catalog.compareSubtitle': 'Dive into each learning stage, open the overlay for specs, and add the kits you need directly to your cart.',
             'category.preschool.title': 'Preschool prototypes',
             'category.preschool.description': 'Gentle builds that introduce motion, color, and cause-and-effect for the youngest makers.',
             'category.primary.title': 'Primary school innovators',
@@ -114,7 +116,7 @@
             'nav.account': 'Λογαριασμός',
             'nav.cartShort': 'Καλάθι',
             'nav.logout': 'Αποσύνδεση',
-            'hero.title': 'Το μέλλον της ρομποτικής ξεκινά εδώ',
+            'hero.title': 'Σφυρηλατήστε το μέλλον σας στη ρομποτική',
             'hero.subtitle': 'Διαδραστικά κιτ, προκλήσεις και κοινότητα — όλα σε ένα μέρος.',
             'hero.cta': 'Ανακαλύψτε κιτ',
             'who.title': 'Ποιοι είμαστε',
@@ -125,6 +127,8 @@
             'future.text': 'Η ρομποτική ενισχύει τη δημιουργικότητα, την επίλυση προβλημάτων και τη συνεργασία. Η κοινότητά μας μοιράζεται μηνιαίες αποστολές, ζωντανά εργαστήρια και ερευνητικά δελτία ώστε κάθε δημιουργός να συνεχίζει να μαθαίνει.',
             'catalog.title': 'Εξερευνήστε τα πρωτότυπά μας',
             'catalog.subtitle': 'Επιλέξτε μια κατηγορία για να δείτε λεπτομέρειες, να προσθέσετε κιτ στο καλάθι ή να τα αποθηκεύσετε.',
+            'catalog.compareTitle': 'Συγκρίνετε όλα τα πρωτότυπα RoboForge',
+            'catalog.compareSubtitle': 'Εξερευνήστε κάθε εκπαιδευτικό επίπεδο, δείτε τις λεπτομέρειες και προσθέστε άμεσα τα κιτ που χρειάζεστε στο καλάθι σας.',
             'category.preschool.title': 'Πρωτότυπα προσχολικής εκπαίδευσης',
             'category.preschool.description': 'Ήπιες κατασκευές που εισάγουν την κίνηση, τα χρώματα και την αιτιότητα στους μικρότερους δημιουργούς.',
             'category.primary.title': 'Καινοτόμοι δημοτικού',
@@ -186,6 +190,10 @@
         document.querySelectorAll('.nav-item.open').forEach(item => {
             if (!except || item !== except) {
                 item.classList.remove('open');
+                const trigger = item.querySelector('.nav-trigger');
+                if (trigger) {
+                    trigger.setAttribute('aria-expanded', 'false');
+                }
             }
         });
     }
@@ -196,6 +204,7 @@
             const isOpen = parent.classList.contains('open');
             closeDropdowns(isOpen ? null : parent);
             parent.classList.toggle('open', !isOpen);
+            trigger.setAttribute('aria-expanded', String(!isOpen));
             event.stopPropagation();
         });
         trigger.addEventListener('keydown', event => {
@@ -298,15 +307,15 @@
             }
             element.innerHTML = rendered;
         });
-        localStorage.setItem('crunchlabs-lang', language);
+        localStorage.setItem('roboforge-lang', language);
     }
 
-    const storedLang = localStorage.getItem('crunchlabs-lang') || 'en';
+    const storedLang = localStorage.getItem('roboforge-lang') || 'en';
     applyLanguage(storedLang);
 
     if (languageToggle) {
         languageToggle.addEventListener('click', () => {
-            const current = localStorage.getItem('crunchlabs-lang') || 'en';
+            const current = localStorage.getItem('roboforge-lang') || 'en';
             const next = current === 'en' ? 'el' : 'en';
             applyLanguage(next);
         });

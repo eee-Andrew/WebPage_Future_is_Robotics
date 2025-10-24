@@ -3,11 +3,11 @@ $pageTitle = 'Your cart';
 $showHero = false;
 $bodyClass = 'cart-page';
 require_once __DIR__ . '/db.php';
-crunchlabs_require_login();
+roboforge_require_login();
 
-$currentUser = crunchlabs_current_user();
+$currentUser = roboforge_current_user();
 $action = $_POST['action'] ?? null;
-$redirectBack = $_POST['redirect'] ?? crunchlabs_url('cart.php');
+$redirectBack = $_POST['redirect'] ?? roboforge_url('cart.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action) {
     if ($action === 'add') {
@@ -18,11 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action) {
         if ($product->fetch()) {
             $add = $pdo->prepare('INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)');
             $add->execute([$currentUser['id'], $productId, $quantity]);
-            crunchlabs_flash_set('success', 'Product added to your cart.');
+            roboforge_flash_set('success', 'Product added to your cart.');
         } else {
-            crunchlabs_flash_set('error', 'Unable to add the selected product.');
+            roboforge_flash_set('error', 'Unable to add the selected product.');
         }
-        crunchlabs_redirect($redirectBack);
+        roboforge_redirect($redirectBack);
     }
 
     if ($action === 'update') {
@@ -31,21 +31,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action) {
         if ($quantity <= 0) {
             $delete = $pdo->prepare('DELETE FROM cart_items WHERE user_id = ? AND product_id = ?');
             $delete->execute([$currentUser['id'], $productId]);
-            crunchlabs_flash_set('success', 'Item removed from your cart.');
+            roboforge_flash_set('success', 'Item removed from your cart.');
         } else {
             $update = $pdo->prepare('UPDATE cart_items SET quantity = ? WHERE user_id = ? AND product_id = ?');
             $update->execute([$quantity, $currentUser['id'], $productId]);
-            crunchlabs_flash_set('success', 'Cart updated.');
+            roboforge_flash_set('success', 'Cart updated.');
         }
-        crunchlabs_redirect('cart.php');
+        roboforge_redirect('cart.php');
     }
 
     if ($action === 'remove') {
         $productId = (int) ($_POST['product_id'] ?? 0);
         $delete = $pdo->prepare('DELETE FROM cart_items WHERE user_id = ? AND product_id = ?');
         $delete->execute([$currentUser['id'], $productId]);
-        crunchlabs_flash_set('success', 'Item removed from your cart.');
-        crunchlabs_redirect('cart.php');
+        roboforge_flash_set('success', 'Item removed from your cart.');
+        roboforge_redirect('cart.php');
     }
 
     if ($action === 'checkout') {
@@ -110,16 +110,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action) {
                 $clearCart->execute([$currentUser['id']]);
 
                 $pdo->commit();
-                crunchlabs_flash_set('success', 'Thank you! Your order has been placed.');
+                roboforge_flash_set('success', 'Thank you! Your order has been placed.');
             } catch (Throwable $e) {
                 $pdo->rollBack();
-                crunchlabs_flash_set('error', 'We could not complete your checkout. Please try again.');
+                roboforge_flash_set('error', 'We could not complete your checkout. Please try again.');
             }
         } else {
-            crunchlabs_flash_set('error', $errors[0]);
+            roboforge_flash_set('error', $errors[0]);
         }
 
-        crunchlabs_redirect('cart.php');
+        roboforge_redirect('cart.php');
     }
 }
 
@@ -142,7 +142,7 @@ require_once __DIR__ . '/partials/header.php';
         <div class="cart-grid">
             <div class="cart-items">
                 <?php foreach ($cartItems as $item): ?>
-                    <?php $imagePath = crunchlabs_public_path($item['image_path'], crunchlabs_url('assets/img/products/placeholder.svg')); ?>
+                    <?php $imagePath = roboforge_public_path($item['image_path'], roboforge_url('assets/img/products/placeholder.svg')); ?>
                     <article class="cart-card">
                         <img src="<?= htmlspecialchars($imagePath); ?>" alt="<?= htmlspecialchars($item['name']); ?>">
                         <div class="cart-info">
@@ -150,7 +150,7 @@ require_once __DIR__ . '/partials/header.php';
                             <p><?= htmlspecialchars($item['short_description']); ?></p>
                             <div class="cart-meta">
                                 <span class="price">$<?= number_format((float) $item['price'], 2); ?></span>
-                                <form method="post" action="<?= htmlspecialchars(crunchlabs_url('cart.php')); ?>" class="quantity-form">
+                                <form method="post" action="<?= htmlspecialchars(roboforge_url('cart.php')); ?>" class="quantity-form">
                                     <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="product_id" value="<?= (int) $item['id']; ?>">
                                     <label data-i18n="cart.quantity">Qty
@@ -159,7 +159,7 @@ require_once __DIR__ . '/partials/header.php';
                                     <button type="submit" class="btn-secondary" data-i18n="cart.update">Update</button>
                                 </form>
                             </div>
-                            <form method="post" action="<?= htmlspecialchars(crunchlabs_url('cart.php')); ?>">
+                            <form method="post" action="<?= htmlspecialchars(roboforge_url('cart.php')); ?>">
                                 <input type="hidden" name="action" value="remove">
                                 <input type="hidden" name="product_id" value="<?= (int) $item['id']; ?>">
                                 <button type="submit" class="btn-danger" data-i18n="cart.remove">Remove</button>
@@ -174,7 +174,7 @@ require_once __DIR__ . '/partials/header.php';
             </div>
             <div class="checkout-form">
                 <h3 data-i18n="checkout.title">Checkout</h3>
-                <form method="post" action="<?= htmlspecialchars(crunchlabs_url('cart.php')); ?>" class="form-card">
+                <form method="post" action="<?= htmlspecialchars(roboforge_url('cart.php')); ?>" class="form-card">
                     <input type="hidden" name="action" value="checkout">
                     <label data-i18n="checkout.name">Full name
                         <input type="text" name="full_name" required>

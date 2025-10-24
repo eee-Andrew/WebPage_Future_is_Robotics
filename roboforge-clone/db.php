@@ -4,7 +4,7 @@ require_once __DIR__ . '/config.php';
 /**
  * Create a fresh PDO connection using the configured credentials.
  */
-function crunchlabs_create_connection(): PDO
+function roboforge_create_connection(): PDO
 {
     $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
 
@@ -20,12 +20,12 @@ function crunchlabs_create_connection(): PDO
  * Return a cached PDO connection, automatically re-establishing it when the
  * MySQL server drops the link ("server has gone away").
  */
-function crunchlabs_db(): PDO
+function roboforge_db(): PDO
 {
     static $pdo = null;
 
     if (!($pdo instanceof PDO)) {
-        $pdo = crunchlabs_create_connection();
+        $pdo = roboforge_create_connection();
         return $pdo;
     }
 
@@ -38,7 +38,7 @@ function crunchlabs_db(): PDO
         // Reconnect when MySQL closes the connection (error 2006) or reports
         // a truncated packet (error 2013) which indicates a dropped link.
         if ($errorCode === 2006 || $errorCode === 2013 || stripos($message, 'server has gone away') !== false) {
-            $pdo = crunchlabs_create_connection();
+            $pdo = roboforge_create_connection();
         } else {
             throw $e;
         }
@@ -48,7 +48,7 @@ function crunchlabs_db(): PDO
 }
 
 try {
-    $pdo = crunchlabs_db();
+    $pdo = roboforge_db();
 } catch (PDOException $e) {
     exit('Database connection failed: ' . $e->getMessage());
 }

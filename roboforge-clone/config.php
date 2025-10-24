@@ -1,7 +1,7 @@
 <?php
 // Global configuration constants for database access.
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'crunchlabs');
+define('DB_NAME', 'roboforge');
 define('DB_USER', 'root'); // Update if your MySQL user differs.
 define('DB_PASS', '');     // Fill with your MySQL password if set.
 
@@ -39,8 +39,8 @@ if (!defined('APP_BASE_PATH')) {
     define('APP_BASE_PATH', $basePath);
 }
 
-if (!function_exists('crunchlabs_url')) {
-    function crunchlabs_url(string $path = ''): string
+if (!function_exists('roboforge_url')) {
+    function roboforge_url(string $path = ''): string
     {
         $base = APP_BASE_PATH;
         $trimmed = ltrim($path, '/');
@@ -57,8 +57,8 @@ if (!function_exists('crunchlabs_url')) {
     }
 }
 
-if (!function_exists('crunchlabs_public_path')) {
-    function crunchlabs_public_path(?string $path, ?string $fallback = null): string
+if (!function_exists('roboforge_public_path')) {
+    function roboforge_public_path(?string $path, ?string $fallback = null): string
     {
         if ($path === null || $path === '') {
             return $fallback ?? '';
@@ -72,40 +72,40 @@ if (!function_exists('crunchlabs_public_path')) {
             return $path;
         }
 
-        return crunchlabs_url($path);
+        return roboforge_url($path);
     }
 }
 
-if (!function_exists('crunchlabs_is_logged_in')) {
-    function crunchlabs_is_logged_in(): bool
+if (!function_exists('roboforge_is_logged_in')) {
+    function roboforge_is_logged_in(): bool
     {
         return !empty($_SESSION['user']);
     }
 }
 
-if (!function_exists('crunchlabs_current_user')) {
-    function crunchlabs_current_user(): ?array
+if (!function_exists('roboforge_current_user')) {
+    function roboforge_current_user(): ?array
     {
         return $_SESSION['user'] ?? null;
     }
 }
 
-if (!function_exists('crunchlabs_require_login')) {
-    function crunchlabs_require_login(?string $redirectTo = null): void
+if (!function_exists('roboforge_require_login')) {
+    function roboforge_require_login(?string $redirectTo = null): void
     {
-        if (crunchlabs_is_logged_in()) {
+        if (roboforge_is_logged_in()) {
             return;
         }
 
-        $target = $redirectTo ?? ($_SERVER['REQUEST_URI'] ?? crunchlabs_url());
-        $destination = crunchlabs_url('login.php?redirect=' . urlencode($target));
+        $target = $redirectTo ?? ($_SERVER['REQUEST_URI'] ?? roboforge_url());
+        $destination = roboforge_url('login.php?redirect=' . urlencode($target));
         header('Location: ' . $destination);
         exit;
     }
 }
 
-if (!function_exists('crunchlabs_redirect')) {
-    function crunchlabs_redirect(string $path): void
+if (!function_exists('roboforge_redirect')) {
+    function roboforge_redirect(string $path): void
     {
         if (preg_match('#^https?://#i', $path)) {
             $parsed = parse_url($path);
@@ -120,20 +120,20 @@ if (!function_exists('crunchlabs_redirect')) {
             exit;
         }
 
-        header('Location: ' . crunchlabs_url(ltrim($path, '/')));
+        header('Location: ' . roboforge_url(ltrim($path, '/')));
         exit;
     }
 }
 
-if (!function_exists('crunchlabs_flash_set')) {
-    function crunchlabs_flash_set(string $key, string $message): void
+if (!function_exists('roboforge_flash_set')) {
+    function roboforge_flash_set(string $key, string $message): void
     {
         $_SESSION['flash'][$key] = $message;
     }
 }
 
-if (!function_exists('crunchlabs_flash_get')) {
-    function crunchlabs_flash_get(string $key): ?string
+if (!function_exists('roboforge_flash_get')) {
+    function roboforge_flash_get(string $key): ?string
     {
         if (!isset($_SESSION['flash'][$key])) {
             return null;

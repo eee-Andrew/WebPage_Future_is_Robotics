@@ -1,62 +1,13 @@
 <?php
-$pageTitle = 'Robotics Kits Catalog';
-$showHero = true;
-$bodyClass = 'catalog-page';
-require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/partials/header.php';
-
-$productQuery = $pdo->query('SELECT * FROM products ORDER BY category_slug, name ASC');
-$products = $productQuery->fetchAll();
-$fallbackImage = crunchlabs_url('assets/img/products/placeholder.svg');
-
-$groupedProducts = [];
-foreach ($products as $product) {
-    $groupedProducts[$product['category_slug']][] = $product;
-}
-
-$categoryMeta = [
-    'preschool' => [
-        'title' => 'Preschool prototypes',
-        'description' => 'Gentle builds that introduce motion, color, and cause-and-effect for the youngest makers.',
-        'anchor' => 'prototype-preschool',
-    ],
-    'primary' => [
-        'title' => 'Primary school innovators',
-        'description' => 'Curated challenges that blend storytelling with hands-on robotics for growing explorers.',
-        'anchor' => 'prototype-primary',
-    ],
-    'highschool' => [
-        'title' => 'High school innovators',
-        'description' => 'Rigorous builds that sharpen engineering judgment, teamwork, and experimentation.',
-        'anchor' => 'prototype-highschool',
-    ],
-    'university' => [
-        'title' => 'University research labs',
-        'description' => 'Advanced systems that dive into autonomy, feedback loops, and mission readiness.',
-        'anchor' => 'prototype-university',
-    ],
-];
-
-$currentUrl = $_SERVER['REQUEST_URI'] ?? crunchlabs_url('index.php');
+$catalogHeading = $catalogHeading ?? 'Explore our prototypes';
+$catalogSubheading = $catalogSubheading ?? 'Select a category below to open detailed layers for each kit, add them to your cart, or save them for later.';
+$catalogHeadingKey = $catalogHeadingKey ?? 'catalog.title';
+$catalogSubheadingKey = $catalogSubheadingKey ?? 'catalog.subtitle';
+$currentUrl = $currentUrl ?? ($_SERVER['REQUEST_URI'] ?? roboforge_url('home.php'));
 ?>
-<section id="who-we-are" class="info-section">
-    <h2 data-i18n="who.title">Who we are</h2>
-    <p data-i18n="who.text">We are a collective of educators, engineers, and designers delivering robotics journeys for every age. Our studios build real-world challenges that help learners imagine, prototype, and launch ideas that matter.</p>
-</section>
-
-<section id="why-products" class="info-section">
-    <h2 data-i18n="why.title">Why these products</h2>
-    <p data-i18n="why.text">Each kit is engineered with modular parts, video guidance, and classroom-ready lesson paths. Families, schools, and makerspaces can expand or customise the builds without starting from scratch.</p>
-</section>
-
-<section id="future-robotics" class="info-section">
-    <h2 data-i18n="future.title">Future is Robotics</h2>
-    <p data-i18n="future.text">Robotics unlocks creative confidence, problem solving, and collaboration. Our community shares monthly missions, live workshops, and research briefs so every builder can keep learning.</p>
-</section>
-
 <section class="catalog-intro" id="products">
-    <h2 data-i18n="catalog.title">Explore our prototypes</h2>
-    <p data-i18n="catalog.subtitle">Select a category below to open detailed layers for each kit, add them to your cart, or save them for later.</p>
+    <h2 data-i18n="<?= htmlspecialchars($catalogHeadingKey); ?>"><?= htmlspecialchars($catalogHeading); ?></h2>
+    <p data-i18n="<?= htmlspecialchars($catalogSubheadingKey); ?>"><?= htmlspecialchars($catalogSubheading); ?></p>
 </section>
 
 <?php foreach ($categoryMeta as $slug => $meta): ?>
@@ -68,7 +19,7 @@ $currentUrl = $_SERVER['REQUEST_URI'] ?? crunchlabs_url('index.php');
         <div class="product-grid">
             <?php foreach ($groupedProducts[$slug] ?? [] as $product): ?>
                 <?php
-                    $imagePath = crunchlabs_public_path($product['image_path'], $fallbackImage);
+                    $imagePath = roboforge_public_path($product['image_path'], $fallbackImage);
                     $longDesc = $product['long_description'] ?: $product['short_description'];
                 ?>
                 <article
@@ -111,8 +62,8 @@ $currentUrl = $_SERVER['REQUEST_URI'] ?? crunchlabs_url('index.php');
                 <h2 id="overlay-title"></h2>
                 <p class="overlay-short" id="overlay-short"></p>
                 <div class="overlay-price" id="overlay-price"></div>
-                <?php if (crunchlabs_is_logged_in()): ?>
-                    <form method="post" action="<?= htmlspecialchars(crunchlabs_url('cart.php')); ?>" class="overlay-form">
+                <?php if (roboforge_is_logged_in()): ?>
+                    <form method="post" action="<?= htmlspecialchars(roboforge_url('cart.php')); ?>" class="overlay-form">
                         <input type="hidden" name="action" value="add">
                         <input type="hidden" name="product_id" id="overlay-product-id-cart">
                         <input type="hidden" name="redirect" value="<?= htmlspecialchars($currentUrl); ?>">
@@ -121,7 +72,7 @@ $currentUrl = $_SERVER['REQUEST_URI'] ?? crunchlabs_url('index.php');
                         </label>
                         <button type="submit" class="cta-button" data-i18n="overlay.addCart">Add to cart</button>
                     </form>
-                    <form method="post" action="<?= htmlspecialchars(crunchlabs_url('account.php')); ?>" class="overlay-form secondary">
+                    <form method="post" action="<?= htmlspecialchars(roboforge_url('account.php')); ?>" class="overlay-form secondary">
                         <input type="hidden" name="action" value="save">
                         <input type="hidden" name="product_id" id="overlay-product-id-save">
                         <input type="hidden" name="redirect" value="<?= htmlspecialchars($currentUrl); ?>">
@@ -130,7 +81,7 @@ $currentUrl = $_SERVER['REQUEST_URI'] ?? crunchlabs_url('index.php');
                 <?php else: ?>
                     <div class="overlay-auth-callout">
                         <p data-i18n="overlay.loginPrompt">Log in to add this kit to your cart or save it for later.</p>
-                        <a class="cta-button" href="<?= htmlspecialchars(crunchlabs_url('login.php')); ?>" data-i18n="overlay.login">Log in</a>
+                        <a class="cta-button" href="<?= htmlspecialchars(roboforge_url('login.php')); ?>" data-i18n="overlay.login">Log in</a>
                     </div>
                 <?php endif; ?>
                 <div class="overlay-long" id="overlay-long"></div>
@@ -138,5 +89,3 @@ $currentUrl = $_SERVER['REQUEST_URI'] ?? crunchlabs_url('index.php');
         </div>
     </div>
 </div>
-
-<?php require_once __DIR__ . '/partials/footer.php'; ?>
