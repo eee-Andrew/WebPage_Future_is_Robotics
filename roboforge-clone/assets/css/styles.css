@@ -610,6 +610,17 @@ label {
     gap: 0.5rem;
 }
 
+.form-label {
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.form-card .form-field input,
+.form-card .form-field textarea,
+.form-card .form-field select {
+    width: 100%;
+}
+
 input,
 textarea,
 select {
@@ -619,6 +630,15 @@ select {
     font-size: 1rem;
     font-family: inherit;
     background: #fff;
+    color: var(--dark);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 111, 60, 0.15);
 }
 
 textarea {

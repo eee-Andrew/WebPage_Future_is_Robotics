@@ -50,14 +50,14 @@ require_once __DIR__ . '/partials/header.php';
     <?php endforeach; ?>
     <form method="post" class="form-card">
         <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect); ?>">
-        <label>
-            <span class="form-label" data-i18n="auth.email">Email</span>
-            <input type="email" name="email" required value="<?= htmlspecialchars($email); ?>">
-        </label>
-        <label>
-            <span class="form-label" data-i18n="auth.password">Password</span>
-            <input type="password" name="password" required>
-        </label>
+        <div class="form-field">
+            <label class="form-label" for="login-email" data-i18n="auth.email">Email</label>
+            <input id="login-email" type="email" name="email" required autocomplete="email" value="<?= htmlspecialchars($email); ?>">
+        </div>
+        <div class="form-field">
+            <label class="form-label" for="login-password" data-i18n="auth.password">Password</label>
+            <input id="login-password" type="password" name="password" required autocomplete="current-password">
+        </div>
         <button type="submit" class="cta-button" data-i18n="auth.loginButton">Log in</button>
     </form>
     <p><span data-i18n="auth.registerPromptText">Need an account?</span> <a href="<?= htmlspecialchars(roboforge_url('register.php?redirect=' . urlencode($redirect))); ?>" data-i18n="auth.registerLink">Create one</a>.</p>

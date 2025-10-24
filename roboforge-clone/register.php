@@ -61,22 +61,22 @@ require_once __DIR__ . '/partials/header.php';
     <?php endforeach; ?>
     <form method="post" class="form-card">
         <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect); ?>">
-        <label>
-            <span class="form-label" data-i18n="auth.name">Full name</span>
-            <input type="text" name="name" required value="<?= htmlspecialchars($name); ?>">
-        </label>
-        <label>
-            <span class="form-label" data-i18n="auth.email">Email</span>
-            <input type="email" name="email" required value="<?= htmlspecialchars($email); ?>">
-        </label>
-        <label>
-            <span class="form-label" data-i18n="auth.password">Password</span>
-            <input type="password" name="password" required>
-        </label>
-        <label>
-            <span class="form-label" data-i18n="auth.confirm">Confirm password</span>
-            <input type="password" name="confirm_password" required>
-        </label>
+        <div class="form-field">
+            <label class="form-label" for="register-name" data-i18n="auth.name">Full name</label>
+            <input id="register-name" type="text" name="name" required autocomplete="name" value="<?= htmlspecialchars($name); ?>">
+        </div>
+        <div class="form-field">
+            <label class="form-label" for="register-email" data-i18n="auth.email">Email</label>
+            <input id="register-email" type="email" name="email" required autocomplete="email" value="<?= htmlspecialchars($email); ?>">
+        </div>
+        <div class="form-field">
+            <label class="form-label" for="register-password" data-i18n="auth.password">Password</label>
+            <input id="register-password" type="password" name="password" required autocomplete="new-password">
+        </div>
+        <div class="form-field">
+            <label class="form-label" for="register-confirm" data-i18n="auth.confirm">Confirm password</label>
+            <input id="register-confirm" type="password" name="confirm_password" required autocomplete="new-password">
+        </div>
         <button type="submit" class="cta-button" data-i18n="auth.registerButton">Create account</button>
     </form>
     <p><span data-i18n="auth.loginPromptText">Already have an account?</span> <a href="<?= htmlspecialchars(roboforge_url('login.php?redirect=' . urlencode($redirect))); ?>" data-i18n="auth.loginLink">Log in</a>.</p>
