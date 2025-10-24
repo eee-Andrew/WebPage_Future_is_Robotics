@@ -153,7 +153,8 @@ require_once __DIR__ . '/partials/header.php';
                                 <form method="post" action="<?= htmlspecialchars(roboforge_url('cart.php')); ?>" class="quantity-form">
                                     <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="product_id" value="<?= (int) $item['id']; ?>">
-                                    <label data-i18n="cart.quantity">Qty
+                                    <label>
+                                        <span class="form-label" data-i18n="cart.quantity">Qty</span>
                                         <input type="number" name="quantity" min="0" value="<?= (int) $item['quantity']; ?>">
                                     </label>
                                     <button type="submit" class="btn-secondary" data-i18n="cart.update">Update</button>
@@ -176,38 +177,49 @@ require_once __DIR__ . '/partials/header.php';
                 <h3 data-i18n="checkout.title">Checkout</h3>
                 <form method="post" action="<?= htmlspecialchars(roboforge_url('cart.php')); ?>" class="form-card">
                     <input type="hidden" name="action" value="checkout">
-                    <label data-i18n="checkout.name">Full name
+                    <label>
+                        <span class="form-label" data-i18n="checkout.name">Full name</span>
                         <input type="text" name="full_name" required>
                     </label>
-                    <label data-i18n="checkout.address1">Address line 1
+                    <label>
+                        <span class="form-label" data-i18n="checkout.address1">Address line 1</span>
                         <input type="text" name="address_line1" required>
                     </label>
-                    <label data-i18n="checkout.address2">Address line 2
+                    <label>
+                        <span class="form-label" data-i18n="checkout.address2">Address line 2</span>
                         <input type="text" name="address_line2">
                     </label>
-                    <label data-i18n="checkout.city">City
+                    <label>
+                        <span class="form-label" data-i18n="checkout.city">City</span>
                         <input type="text" name="city" required>
                     </label>
-                    <label data-i18n="checkout.postal">Postal code
+                    <label>
+                        <span class="form-label" data-i18n="checkout.postal">Postal code</span>
                         <input type="text" name="postal_code" required>
                     </label>
-                    <label data-i18n="checkout.country">Country
+                    <label>
+                        <span class="form-label" data-i18n="checkout.country">Country</span>
                         <input type="text" name="country" required>
                     </label>
-                    <label data-i18n="checkout.email">Email
+                    <label>
+                        <span class="form-label" data-i18n="checkout.email">Email</span>
                         <input type="email" name="email" required>
                     </label>
-                    <label data-i18n="checkout.phone">Phone
+                    <label>
+                        <span class="form-label" data-i18n="checkout.phone">Phone</span>
                         <input type="tel" name="phone" required>
                     </label>
-                    <label data-i18n="checkout.card">Card number
+                    <label>
+                        <span class="form-label" data-i18n="checkout.card">Card number</span>
                         <input type="text" name="card_number" required>
                     </label>
                     <div class="card-row">
-                        <label data-i18n="checkout.expiry">Expiry (MM/YY)
+                        <label>
+                            <span class="form-label" data-i18n="checkout.expiry">Expiry (MM/YY)</span>
                             <input type="text" name="card_expiry" required>
                         </label>
-                        <label data-i18n="checkout.cvv">CVV
+                        <label>
+                            <span class="form-label" data-i18n="checkout.cvv">CVV</span>
                             <input type="text" name="card_cvv" required>
                         </label>
                     </div>

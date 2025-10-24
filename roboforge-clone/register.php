@@ -61,16 +61,20 @@ require_once __DIR__ . '/partials/header.php';
     <?php endforeach; ?>
     <form method="post" class="form-card">
         <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect); ?>">
-        <label data-i18n="auth.name">Full name
+        <label>
+            <span class="form-label" data-i18n="auth.name">Full name</span>
             <input type="text" name="name" required value="<?= htmlspecialchars($name); ?>">
         </label>
-        <label data-i18n="auth.email">Email
+        <label>
+            <span class="form-label" data-i18n="auth.email">Email</span>
             <input type="email" name="email" required value="<?= htmlspecialchars($email); ?>">
         </label>
-        <label data-i18n="auth.password">Password
+        <label>
+            <span class="form-label" data-i18n="auth.password">Password</span>
             <input type="password" name="password" required>
         </label>
-        <label data-i18n="auth.confirm">Confirm password
+        <label>
+            <span class="form-label" data-i18n="auth.confirm">Confirm password</span>
             <input type="password" name="confirm_password" required>
         </label>
         <button type="submit" class="cta-button" data-i18n="auth.registerButton">Create account</button>

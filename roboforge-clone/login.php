@@ -50,10 +50,12 @@ require_once __DIR__ . '/partials/header.php';
     <?php endforeach; ?>
     <form method="post" class="form-card">
         <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect); ?>">
-        <label data-i18n="auth.email">Email
+        <label>
+            <span class="form-label" data-i18n="auth.email">Email</span>
             <input type="email" name="email" required value="<?= htmlspecialchars($email); ?>">
         </label>
-        <label data-i18n="auth.password">Password
+        <label>
+            <span class="form-label" data-i18n="auth.password">Password</span>
             <input type="password" name="password" required>
         </label>
         <button type="submit" class="cta-button" data-i18n="auth.loginButton">Log in</button>
